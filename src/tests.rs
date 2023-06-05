@@ -6,6 +6,14 @@ mod test {
 	use super::*;
 
 	#[test]
+	fn owner_of_unexistent_collection_is_none() {
+		new_test_ext().execute_with(|| {
+			assert_eq!(LivingAssetsModule::owner_of_collection(0), None);
+			assert_eq!(LivingAssetsModule::owner_of_collection(1), None);
+		});
+	}
+
+	#[test]
 	fn it_works_for_default_value() {
 		new_test_ext().execute_with(|| {
 			// Go past genesis block so events get deposited
