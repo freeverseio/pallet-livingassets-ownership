@@ -37,11 +37,6 @@ pub mod pallet {
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
 
-	// #[pallet::storage]
-    // #[pallet::getter(fn get_balance)]
-    // pub(super) type Balances<T: Config> =
-    // StorageMap<_, Blake2_128Concat, T::AccountId, u64, ValueQuery>;
-
 	#[pallet::storage]
 	#[pallet::getter(fn owner_of_collection)]
 	pub(super) type OwnerOfCollection<T: Config> =
@@ -64,6 +59,7 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		CollectionAlreadyExists,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -71,11 +67,19 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		// #[pallet::call_index(0)]
-		// #[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())] // TODO
-		// pub fn owner_of_collection(origin: OriginFor<T>, collection_id: i32) -> Option<OwnerType> {
-		// 	let _who = ensure_signed(origin)?;
-		// }
+		#[pallet::call_index(0)]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())] // TODO set proper weight
+		pub fn create_collection(origin: OriginFor<T>, collection_id: u64) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+			if OwnerOfCollection::<T>::contains_key(collection_id) {
+				return Err(Error::<T>::CollectionAlreadyExists.into());
+			}
+			OwnerOfCollection::<T>::insert(collection_id, who);
+
+			// TODO: emit event
+
+			Ok(())
+		}
 
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.

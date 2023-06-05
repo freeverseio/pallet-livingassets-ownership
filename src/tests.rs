@@ -14,6 +14,25 @@ mod test {
 	}
 
 	#[test]
+	fn create_new_collection() {
+		new_test_ext().execute_with(|| {
+			assert_ok!(LivingAssetsModule::create_collection(RuntimeOrigin::signed(1), 0));
+			assert_eq!(LivingAssetsModule::owner_of_collection(0), Some(1));
+		});
+	}
+
+	#[test]
+	fn create_an_existing_collection_should_fail() {
+		new_test_ext().execute_with(|| {
+			assert_ok!(LivingAssetsModule::create_collection(RuntimeOrigin::signed(1), 0));
+			assert_noop!(
+				LivingAssetsModule::create_collection(RuntimeOrigin::signed(1), 0),
+				Error::<Test>::CollectionAlreadyExists
+			);
+		});
+	}
+
+	#[test]
 	fn it_works_for_default_value() {
 		new_test_ext().execute_with(|| {
 			// Go past genesis block so events get deposited
